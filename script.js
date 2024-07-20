@@ -4,8 +4,7 @@ function fetchData(apiLink, domItem) {
     method: "GET",
     headers: {
       accept: "application/json",
-      Authorization:
-        "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyMGU2ZmZlZDg3MzYwOTJiMDEzYmFmNGZmMzgyZTcwYSIsIm5iZiI6MTcyMTQ1MzczMS42ODQ0MSwic3ViIjoiNjY5YjRiZTZlNDVjNmM1ZTJlZGU5NGZhIiwic2NvcGVzIjpbImFwaV9yZWFkIl0sInZlcnNpb24iOjF9.t2nYZZRTvQ07h25BUiRLnOWbuxz769xfuYdMjLSgK9s",
+      Authorization: tkn,
     },
   };
 
@@ -13,10 +12,11 @@ function fetchData(apiLink, domItem) {
     .then((res) => res.json())
     .then((json) => {
       // top 10 movies with highest rating
+      console.log(json);
       domItem.innerHTML = json.results
         .map((movie) => {
           return `
-            <div class="movieCard">
+            <div class="movieCard" onclick="setFilmID(${movie.id},'${movie.title ? 'movie':'tv'}')">
               <img class="poster" src="https://image.tmdb.org/t/p/w500${
                 movie.poster_path
               }" alt="${movie.title ? movie.title : movie.name}" />
@@ -77,4 +77,36 @@ function onLoad() {
   getAiringToday();
 }
 
-onLoad();
+// details
+
+function setFilmID(movie_id, filmType) {
+  console.log(movie_id, filmType);
+    localStorage.setItem("filmID", JSON.stringify(movie_id));
+    localStorage.setItem("filmType", JSON.stringify(filmType));
+       window.location.href = "./pages/details.html";
+}
+
+function filmDetails() {
+  let movie_id = JSON.parse(localStorage.getItem("filmID"))
+  let filmType = JSON.parse(localStorage.getItem("filmType"))
+  console.log(movie_id, filmType);
+  fetch(`https://api.themoviedb.org/3/${filmType.trim()}/${movie_id}`, {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+      Authorization: tkn,
+    },
+  })
+    .then((res) => res.json())
+    .then((json) => {
+      console.log(json);
+
+      filmTitle.innerHTML = filmType == "movie" ? json.title : json.name
+      filmDescription.innerHTML = json.overview
+      filmImage.src = "https://image.tmdb.org/t/p/w500" + json.poster_path
+     
+     
+    });
+}
+
+// onLoad();
